@@ -1,0 +1,1 @@
+-- fix bug for test input1-no.txt (answer should be 'does not percolate', got 'percolate')
