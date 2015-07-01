@@ -21,15 +21,11 @@ public class Percolation {
     public Percolation(int N) {
         if (N <= 0) throw new IllegalArgumentException();
         this.N = N;
-        sites = new boolean[N][N];
+        sites = new boolean[N + 1][N + 1];
         
         uf = new WeightedQuickUnionUF(N * N + 2);
-        sink = N * N;
+        sink = 0;
         source = N * N + 1;
-        for (int i = 0; i < N; i++) {
-            uf.union(source, getIndex(N - 1, i));
-            uf.union(sink, getIndex(0, i));
-        }
     }
     
     private void validate(int i, int j) {
@@ -49,7 +45,7 @@ public class Percolation {
 
     private int getIndex(int i, int j)
     {
-        return i * N + j;
+        return (i - 1) * N + j;
     }
     
     /**
@@ -60,16 +56,25 @@ public class Percolation {
      */
     public void open(int i, int j) {
         if (!isOpen(i, j)) {
-            sites[i - 1][j - 1] = true;
+            sites[i][j] = true;
 
-            int currSiteIndex = getIndex(i - 1, j - 1);
+            int currSiteIndex = getIndex(i, j);
             for (int k = 0; k < NEIGHBORS; k++) {
             
                 int nextI = i + DELTA[k][0], nextJ = j + DELTA[k][1];
                 if (isInside(nextI, nextJ) && isOpen(nextI, nextJ)) {
-                    int nextIdx = getIndex(nextI - 1, nextJ - 1);
+                    int nextIdx = getIndex(nextI, nextJ);
                     uf.union(currSiteIndex, nextIdx);
                 }
+            }
+            
+            if (i == 1)
+            {
+                uf.union(currSiteIndex, sink);
+            }
+            if (i == N)
+            {
+                uf.union(currSiteIndex, source);
             }
         }
     }
@@ -84,7 +89,7 @@ public class Percolation {
      */
     public boolean isOpen(int i, int j) {
         validate(i, j);
-        return sites[i - 1][j - 1];
+        return sites[i][j];
     }
 
     /**
@@ -99,7 +104,7 @@ public class Percolation {
      */
     public boolean isFull(int i, int j) {
         if (isOpen(i, j)) {
-            return uf.connected(getIndex(i - 1, j - 1), sink);
+            return uf.connected(getIndex(i, j), sink);
         }
         return false;
      }
